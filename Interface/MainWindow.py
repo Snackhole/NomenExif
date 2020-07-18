@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
 
     def CreateInterface(self):
         # Create Window Icon
-        # self.WindowIcon = QIcon(self.GetResourcePath("Assets/NomenEXIF Icon.png"))
+        # self.WindowIcon = QIcon(self.GetResourcePath("Assets/NomenExif Icon.png"))
 
         # Window Icon and Title
         # self.setWindowIcon(self.WindowIcon)

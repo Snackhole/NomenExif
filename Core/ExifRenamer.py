@@ -1,7 +1,8 @@
+import os
 from PIL import Image, ExifTags
 
 
-class EXIFRenamer:
+class ExifRenamer:
     def __init__(self):
         self.RenameQueue = []
         self.AvailableTags = set()
@@ -14,7 +15,7 @@ class EXIFRenamer:
                     AdditionExifData = {ExifTags.TAGS[NumericTag]: TagContents for NumericTag, TagContents in OpenedAddition._getexif().items() if NumericTag in ExifTags.TAGS}
                 except:
                     return False
-                AdditionData = {"Path": Addition, "ExifData": AdditionExifData}
+                AdditionData = {"Path": os.path.abspath(Addition), "ExifData": AdditionExifData}
                 self.RenameQueue.append(AdditionData)
         self.DetermineAvailableTags()
 
@@ -33,3 +34,11 @@ class EXIFRenamer:
     def Clear(self):
         self.RenameQueue.clear()
         self.AvailableTags.clear()
+
+    def GenerateFileName(self, ExifData, Template):
+        FileName = Template
+        return FileName
+
+    def RenameFilesWithTemplate(self, Template):
+        for QueuedFile in self.RenameQueue:
+            NewName = self.GenerateFileName(QueuedFile["ExifData"], Template)
