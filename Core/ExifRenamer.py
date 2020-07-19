@@ -57,7 +57,7 @@ class ExifRenamer:
             FileName = FileName.replace("[HOUR]", Hour)
             FileName = FileName.replace("[MINUTE]", Minute)
             FileName = FileName.replace("[SECOND]", Second)
-        for Tag in ExifData:
+        for Tag in self.AvailableTags:
             FileName = FileName.replace("[" + Tag + "]", str(ExifData[Tag]))
         return FileName
 
