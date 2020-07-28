@@ -81,10 +81,3 @@ class ExifRenamer:
                 if PotentialNewPath != QueuedFile["Path"]:
                     print("Renaming:  " + QueuedFile["FileName"] + " -> " + os.path.basename(PotentialNewPath))
                     os.rename(QueuedFile["Path"], PotentialNewPath)
-
-
-# if __name__ == "__main__":
-#     Renamer = ExifRenamer()
-#     Files = [File for File in os.listdir(".") if File.endswith(".jpg") and File != "test.jpg"]
-#     Renamer.AddToRenameQueue(Files)
-#     Renamer.RenameFilesWithTemplate("[YEAR].[MONTH].[DAY] - [HOUR].[MINUTE].[SECOND]")
