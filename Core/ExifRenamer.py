@@ -9,6 +9,7 @@ class ExifRenamer:
         self.UniqueIdentifier = 1
 
     def AddToRenameQueue(self, Additions):
+        Success = True
         for Addition in Additions:
             if Addition.endswith(".jpg") or Addition.endswith(".jpeg"):
                 AdditionAbsolutePath = os.path.abspath(Addition)
@@ -16,12 +17,14 @@ class ExifRenamer:
                     OpenedAddition = Image.open(AdditionAbsolutePath)
                     AdditionExifData = {ExifTags.TAGS[NumericTag]: TagContents for NumericTag, TagContents in OpenedAddition._getexif().items() if NumericTag in ExifTags.TAGS}
                 except:
-                    return False
+                    Success = False
+                    continue
                 AdditionData = {"Path": AdditionAbsolutePath, "Directory": os.path.dirname(AdditionAbsolutePath), "FileName": os.path.basename(AdditionAbsolutePath), "Extension": os.path.splitext(AdditionAbsolutePath)[1], "ExifData": AdditionExifData}
                 if AdditionData not in self.RenameQueue:
                     self.RenameQueue.append(AdditionData)
         self.RenameQueue.sort(key=lambda x: x["Path"])
         self.DetermineAvailableTags()
+        return Success
 
     def DetermineAvailableTags(self):
         self.AvailableTags.clear()
@@ -41,6 +44,11 @@ class ExifRenamer:
             self.AvailableTags.add("HOUR")
             self.AvailableTags.add("MINUTE")
             self.AvailableTags.add("SECOND")
+    
+    def GetAvailableTags(self):
+        AvailableTagsList = list(self.AvailableTags)
+        AvailableTagsList.sort()
+        return AvailableTagsList
 
     def Clear(self):
         self.RenameQueue.clear()
