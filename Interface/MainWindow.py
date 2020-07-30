@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
         self.AvailableTagsLabel = QLabel("Available Tags")
         self.AvailableTagsLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.AvailableTagsListWidget = QListWidget()
+        self.AvailableTagsListWidget.itemActivated.connect(self.InsertTag)
         self.TemplateSeparator = QFrame()
         self.TemplateSeparator.setFrameShape(QFrame.HLine)
         self.TemplateSeparator.setFrameShadow(QFrame.Sunken)
@@ -106,6 +107,10 @@ class MainWindow(QMainWindow):
         if self.DisplayMessageBox("Clear the file queue?", Icon=QMessageBox.Question, Buttons=(QMessageBox.Yes | QMessageBox.No)) == QMessageBox.Yes:
             self.ExifRenamer.Clear()
             self.UpdateDisplay()
+    
+    def InsertTag(self):
+        self.TemplateLineEdit.insert((self.AvailableTagsListWidget.selectedItems()[0]).text())
+        self.TemplateLineEdit.setFocus()
 
     def Rename(self):
         # Check if files in queue and valid template (includes at least one available tag, is not empty string)
