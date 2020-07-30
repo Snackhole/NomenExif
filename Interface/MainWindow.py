@@ -21,6 +21,12 @@ class MainWindow(QMainWindow):
         # Create Interface
         self.CreateInterface()
 
+        # Load Template
+        LastEnteredTemplateFile = self.GetResourcePath("Template.cfg")
+        if os.path.isfile(LastEnteredTemplateFile):
+            with open(LastEnteredTemplateFile, "r") as ConfigFile:
+                self.TemplateLineEdit.setText(ConfigFile.readline())
+
         # Show Window
         self.show()
 
@@ -80,7 +86,7 @@ class MainWindow(QMainWindow):
         self.TemplateLayout.setColumnStretch(1, 1)
         self.Layout.addLayout(self.TemplateLayout, 4, 0, 1, 5)
 
-        # # Set and Configure Layout
+        # Set and Configure Layout
         self.Layout.setColumnStretch(0, 1)
         self.Layout.setColumnStretch(1, 1)
         self.Frame.setLayout(self.Layout)
@@ -107,7 +113,7 @@ class MainWindow(QMainWindow):
         if self.DisplayMessageBox("Clear the file queue?", Icon=QMessageBox.Question, Buttons=(QMessageBox.Yes | QMessageBox.No)) == QMessageBox.Yes:
             self.ExifRenamer.Clear()
             self.UpdateDisplay()
-    
+
     def InsertTag(self):
         self.TemplateLineEdit.insert((self.AvailableTagsListWidget.selectedItems()[0]).text())
         self.TemplateLineEdit.setFocus()
@@ -130,7 +136,6 @@ class MainWindow(QMainWindow):
             AvailableTagListItem.setText("[" + AvailableTag + "]")
             self.AvailableTagsListWidget.addItem(AvailableTagListItem)
 
-
     def DisplayMessageBox(self, Message, Icon=QMessageBox.Information, Buttons=QMessageBox.Ok, Parent=None):
         MessageBox = QMessageBox(self if Parent is None else Parent)
         # MessageBox.setWindowIcon(self.WindowIcon)
@@ -146,3 +151,10 @@ class MainWindow(QMainWindow):
         DesktopCenterPoint = QApplication.primaryScreen().availableGeometry().center()
         FrameGeometryRectangle.moveCenter(DesktopCenterPoint)
         self.move(FrameGeometryRectangle.topLeft())
+
+    def closeEvent(self, Event) -> None:
+        TemplateString = self.TemplateLineEdit.text()
+        if TemplateString != "":
+            with open(self.GetResourcePath("Template.cfg"), "w") as ConfigFile:
+                ConfigFile.write(TemplateString)
+        Event.accept()

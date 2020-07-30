@@ -11,3 +11,4 @@ venv/
 
 # NomenExif Runtime Files and Compiled Versions
 Versions/
+*.cfg
