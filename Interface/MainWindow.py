@@ -35,10 +35,10 @@ class MainWindow(QMainWindow):
 
     def CreateInterface(self):
         # Create Window Icon
-        # self.WindowIcon = QIcon(self.GetResourcePath("Assets/NomenExif Icon.png"))
+        self.WindowIcon = QIcon(self.GetResourcePath("Assets/NomenExif Icon.png"))
 
         # Window Icon and Title
-        # self.setWindowIcon(self.WindowIcon)
+        self.setWindowIcon(self.WindowIcon)
         self.setWindowTitle(self.ScriptName)
 
         # Create Central Frame
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
 
     def DisplayMessageBox(self, Message, Icon=QMessageBox.Information, Buttons=QMessageBox.Ok, Parent=None):
         MessageBox = QMessageBox(self if Parent is None else Parent)
-        # MessageBox.setWindowIcon(self.WindowIcon)
+        MessageBox.setWindowIcon(self.WindowIcon)
         MessageBox.setWindowTitle(self.ScriptName)
         MessageBox.setIcon(Icon)
         MessageBox.setText(Message)
