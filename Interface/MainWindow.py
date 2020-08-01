@@ -122,10 +122,10 @@ class MainWindow(QMainWindow):
         if len(self.ExifRenamer.RenameQueue) < 1:
             self.DisplayMessageBox("No files selected to rename.", Icon=QMessageBox.Warning)
             return
-        TemplateString = self.TemplateLineEdit.text()
+        Template = self.TemplateLineEdit.text()
         ValidTemplate = False
         for Tag in self.ExifRenamer.AvailableTags:
-            if "[" + Tag + "]" in TemplateString:
+            if "[" + Tag + "]" in Template:
                 ValidTemplate = True
                 break
         if not ValidTemplate:
