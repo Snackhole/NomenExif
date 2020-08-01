@@ -119,8 +119,18 @@ class MainWindow(QMainWindow):
         self.TemplateLineEdit.setFocus()
 
     def Rename(self):
-        # Check if files in queue and valid template (includes at least one available tag, is not empty string)
-        pass
+        if len(self.ExifRenamer.RenameQueue) < 1:
+            self.DisplayMessageBox("No files selected to rename.", Icon=QMessageBox.Warning)
+            return
+        TemplateString = self.TemplateLineEdit.text()
+        ValidTemplate = False
+        for Tag in self.ExifRenamer.AvailableTags:
+            if "[" + Tag + "]" in TemplateString:
+                ValidTemplate = True
+                break
+        if not ValidTemplate:
+            self.DisplayMessageBox("Rename template must contain at least one available tag.", Icon=QMessageBox.Warning)
+            return
 
     # Interface Methods
     def UpdateDisplay(self):
