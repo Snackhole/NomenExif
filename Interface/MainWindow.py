@@ -1,9 +1,12 @@
+import math
+from Interface.StatusThread import StatusThread
 import os
+import threading
 from Core.ExifRenamer import ExifRenamer
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QFrame, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton)
+from PyQt5.QtWidgets import (QApplication, QFileDialog, QFrame, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QProgressBar, QPushButton)
 
 
 class MainWindow(QMainWindow):
@@ -11,6 +14,9 @@ class MainWindow(QMainWindow):
         # Store Parameters
         self.ScriptName = ScriptName
         self.AbsoluteDirectoryPath = AbsoluteDirectoryPath
+
+        # Variables
+        self.RenameInProgress = False
 
         # Create Exif Renamer
         self.ExifRenamer = ExifRenamer()
@@ -26,6 +32,8 @@ class MainWindow(QMainWindow):
         if os.path.isfile(LastEnteredTemplateFile):
             with open(LastEnteredTemplateFile, "r") as ConfigFile:
                 self.TemplateLineEdit.setText(ConfigFile.readline())
+        else:
+            self.TemplateLineEdit.setText("[YEAR].[MONTH].[DAY] - [HOUR].[MINUTE].[SECOND]")
 
         # Show Window
         self.show()
@@ -65,7 +73,20 @@ class MainWindow(QMainWindow):
         self.TemplateLabel = QLabel("Renaming Template:")
         self.TemplateLineEdit = QLineEdit()
         self.RenameButton = QPushButton("Rename Files in Queue with Template")
+        self.ProgressSeparator = QFrame()
+        self.ProgressSeparator.setFrameShape(QFrame.HLine)
+        self.ProgressSeparator.setFrameShadow(QFrame.Sunken)
         self.RenameButton.clicked.connect(self.Rename)
+        self.RenameProgressLabel = QLabel("Rename Progress")
+        self.RenameProgressBar = QProgressBar()
+
+        # Widgets to Disable While Renaming
+        self.DisableList = []
+        self.DisableList.append(self.AddToQueueButton)
+        self.DisableList.append(self.ClearQueueButton)
+        self.DisableList.append(self.AvailableTagsListWidget)
+        self.DisableList.append(self.TemplateLineEdit)
+        self.DisableList.append(self.RenameButton)
 
         # Create Layout
         self.Layout = QGridLayout()
@@ -85,6 +106,11 @@ class MainWindow(QMainWindow):
         self.TemplateLayout.addWidget(self.RenameButton, 1, 0, 1, 2)
         self.TemplateLayout.setColumnStretch(1, 1)
         self.Layout.addLayout(self.TemplateLayout, 4, 0, 1, 5)
+        self.Layout.addWidget(self.ProgressSeparator, 5, 0, 1, 5)
+        self.ProgressLayout = QGridLayout()
+        self.ProgressLayout.addWidget(self.RenameProgressLabel, 0, 0)
+        self.ProgressLayout.addWidget(self.RenameProgressBar, 0, 1)
+        self.Layout.addLayout(self.ProgressLayout, 6, 0, 1, 5)
 
         # Set and Configure Layout
         self.Layout.setColumnStretch(0, 1)
@@ -119,6 +145,7 @@ class MainWindow(QMainWindow):
         self.TemplateLineEdit.setFocus()
 
     def Rename(self):
+        # Validate Inputs
         if len(self.ExifRenamer.RenameQueue) < 1:
             self.DisplayMessageBox("No files selected to rename.", Icon=QMessageBox.Warning)
             return
@@ -131,6 +158,20 @@ class MainWindow(QMainWindow):
         if not ValidTemplate:
             self.DisplayMessageBox("Rename template must contain at least one available tag.", Icon=QMessageBox.Warning)
             return
+
+        # Start Renaming
+        self.SetRenameInProgress(True)
+        self.ExifRenamer.RenameFilesWithTemplate(Template)
+
+        # Attempt to Get Rename Thread and Set Up Status Checking
+        try:
+            RenameThreadInst = [RenameThread for RenameThread in threading.enumerate() if RenameThread.name == "RenameThread"][0]
+            StatusThreadInst = StatusThread(RenameThreadInst)
+            StatusThreadInst.UpdateProgressSignal.connect(lambda: self.UpdateProgress(RenameThreadInst))
+            StatusThreadInst.RenameCompleteSignal.connect(self.RenameComplete)
+            StatusThreadInst.start()
+        except IndexError:
+            self.RenameComplete()
 
     # Interface Methods
     def UpdateDisplay(self):
@@ -145,6 +186,25 @@ class MainWindow(QMainWindow):
             AvailableTagListItem = QListWidgetItem()
             AvailableTagListItem.setText("[" + AvailableTag + "]")
             self.AvailableTagsListWidget.addItem(AvailableTagListItem)
+
+    def SetRenameInProgress(self, RenameInProgress):
+        self.RenameInProgress = RenameInProgress
+        for Widget in self.DisableList:
+            Widget.setDisabled(RenameInProgress)
+        if RenameInProgress:
+            self.StatusBar.showMessage("Renaming in progress...")
+        else:
+            self.StatusBar.clearMessage()
+            self.RenameProgressBar.reset()
+
+    def UpdateProgress(self, RenameThread):
+        RenameProgress = math.floor((RenameThread.FilesRenamed / RenameThread.FileQueueSize) * 100)
+        self.RenameProgressBar.setValue(RenameProgress)
+
+    def RenameComplete(self):
+        self.SetRenameInProgress(False)
+        self.ExifRenamer.Clear()
+        self.UpdateDisplay()
 
     def DisplayMessageBox(self, Message, Icon=QMessageBox.Information, Buttons=QMessageBox.Ok, Parent=None):
         MessageBox = QMessageBox(self if Parent is None else Parent)
