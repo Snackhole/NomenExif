@@ -222,9 +222,15 @@ class MainWindow(QMainWindow):
         FrameGeometryRectangle.moveCenter(DesktopCenterPoint)
         self.move(FrameGeometryRectangle.topLeft())
 
-    def closeEvent(self, Event) -> None:
-        TemplateString = self.TemplateLineEdit.text()
-        if TemplateString != "":
-            with open(self.GetResourcePath("Template.cfg"), "w") as ConfigFile:
-                ConfigFile.write(TemplateString)
-        Event.accept()
+    def closeEvent(self, Event):
+        Close = True
+        if self.RenameInProgress:
+            Close = self.DisplayMessageBox("Files are currently being renamed.  Exit anyway?", Icon=QMessageBox.Question, Buttons=(QMessageBox.Yes | QMessageBox.No)) == QMessageBox.Yes
+        if Close:
+            TemplateString = self.TemplateLineEdit.text()
+            if TemplateString != "":
+                with open(self.GetResourcePath("Template.cfg"), "w") as ConfigFile:
+                    ConfigFile.write(TemplateString)
+            Event.accept()
+        else:
+            Event.ignore()
