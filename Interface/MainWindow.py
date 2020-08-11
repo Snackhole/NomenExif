@@ -34,6 +34,14 @@ class MainWindow(QMainWindow):
                 self.TemplateLineEdit.setText(ConfigFile.readline())
         else:
             self.TemplateLineEdit.setText("[YEAR].[MONTH].[DAY] - [HOUR].[MINUTE].[SECOND]")
+        
+        # Load Last Opened Directory
+        LastOpenedDirectoryFile = self.GetResourcePath("LastOpenedDirectory.cfg")
+        if os.path.isfile(LastOpenedDirectoryFile):
+            with open(LastOpenedDirectoryFile, "r") as ConfigFile:
+                self.LastOpenedDirectory = ConfigFile.readline()
+        else:
+            self.LastOpenedDirectory = None
 
         # Show Window
         self.show()
@@ -124,14 +132,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.Frame)
 
     def GetResourcePath(self, RelativeLocation):
-        return self.AbsoluteDirectoryPath + "/" + RelativeLocation
+        return os.path.join(self.AbsoluteDirectoryPath, RelativeLocation)
 
     def AddToQueue(self):
-        FilesToAdd = QFileDialog.getOpenFileNames(caption="Files to Add to Queue", filter="JPEG Images (*.jpeg *.jpg)")[0]
+        FilesToAdd = QFileDialog.getOpenFileNames(caption="Files to Add to Queue", filter="JPEG Images (*.jpeg *.jpg)", directory=self.LastOpenedDirectory)[0]
         if len(FilesToAdd) < 1:
             return
         AllFilesAddedSuccessfully = self.ExifRenamer.AddToRenameQueue(FilesToAdd)
         self.UpdateDisplay()
+        self.LastOpenedDirectory = os.path.dirname(FilesToAdd[0])
         if not AllFilesAddedSuccessfully:
             self.DisplayMessageBox("Some of the selected files could not be added to the queue.  They may not have Exif data.", Icon=QMessageBox.Warning)
 
@@ -231,6 +240,10 @@ class MainWindow(QMainWindow):
             if TemplateString != "":
                 with open(self.GetResourcePath("Template.cfg"), "w") as ConfigFile:
                     ConfigFile.write(TemplateString)
+            if type(self.LastOpenedDirectory) == str:
+                if os.path.isdir(self.LastOpenedDirectory):
+                    with open(self.GetResourcePath("LastOpenedDirectory.cfg"), "w") as ConfigFile:
+                        ConfigFile.write(self.LastOpenedDirectory)
             Event.accept()
         else:
             Event.ignore()
