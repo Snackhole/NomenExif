@@ -29,6 +29,7 @@ class ExifRenamer:
 
     def DetermineAvailableTags(self):
         self.AvailableTags.clear()
+        RemoveSet = set()
         for QueuedFile in self.RenameQueue:
             QueuedFileTags = QueuedFile["ExifData"].keys()
             for QueuedFileTag in QueuedFileTags:
@@ -37,7 +38,9 @@ class ExifRenamer:
             QueuedFileTags = QueuedFile["ExifData"].keys()
             for ExtantTag in self.AvailableTags:
                 if ExtantTag not in QueuedFileTags:
-                    self.AvailableTags.remove(ExtantTag)
+                    RemoveSet.add(ExtantTag)
+        if len(RemoveSet) > 0:
+            self.AvailableTags -= RemoveSet
         if "DateTimeOriginal" in self.AvailableTags:
             self.AvailableTags.add("YEAR")
             self.AvailableTags.add("MONTH")
