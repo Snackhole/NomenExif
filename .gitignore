@@ -10,5 +10,4 @@ venv/
 .vscode/
 
 # NomenExif Runtime Files and Compiled Versions
-Versions/
-*.cfg
+Configs/

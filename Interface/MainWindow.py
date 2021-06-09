@@ -27,27 +27,14 @@ class MainWindow(QMainWindow):
         # Create Interface
         self.CreateInterface()
 
-        # Load Template
-        LastEnteredTemplateFile = self.GetResourcePath("Template.cfg")
-        if os.path.isfile(LastEnteredTemplateFile):
-            with open(LastEnteredTemplateFile, "r") as ConfigFile:
-                self.TemplateLineEdit.setText(ConfigFile.readline())
-        else:
-            self.TemplateLineEdit.setText("[YEAR].[MONTH].[DAY] - [HOUR].[MINUTE].[SECOND]")
-        
-        # Load Last Opened Directory
-        LastOpenedDirectoryFile = self.GetResourcePath("LastOpenedDirectory.cfg")
-        if os.path.isfile(LastOpenedDirectoryFile):
-            with open(LastOpenedDirectoryFile, "r") as ConfigFile:
-                self.LastOpenedDirectory = ConfigFile.readline()
-        else:
-            self.LastOpenedDirectory = None
-
         # Show Window
         self.show()
 
         # Center Window
         self.Center()
+
+        # Load Configs
+        self.LoadConfigs()
 
     def CreateInterface(self):
         # Create Window Icon
@@ -133,6 +120,39 @@ class MainWindow(QMainWindow):
 
     def GetResourcePath(self, RelativeLocation):
         return os.path.join(self.AbsoluteDirectoryPath, RelativeLocation)
+
+    def LoadConfigs(self):
+        # Template
+        LastEnteredTemplateFile = self.GetResourcePath("Configs/Template.cfg")
+        if os.path.isfile(LastEnteredTemplateFile):
+            with open(LastEnteredTemplateFile, "r") as ConfigFile:
+                self.TemplateLineEdit.setText(ConfigFile.readline())
+        else:
+            self.TemplateLineEdit.setText("[YEAR].[MONTH].[DAY] - [HOUR].[MINUTE].[SECOND]")
+
+        # Last Opened Directory
+        LastOpenedDirectoryFile = self.GetResourcePath("Configs/LastOpenedDirectory.cfg")
+        if os.path.isfile(LastOpenedDirectoryFile):
+            with open(LastOpenedDirectoryFile, "r") as ConfigFile:
+                self.LastOpenedDirectory = ConfigFile.readline()
+        else:
+            self.LastOpenedDirectory = None
+
+    def SaveConfigs(self):
+        if not os.path.isdir(self.GetResourcePath("Configs")):
+            os.mkdir(self.GetResourcePath("Configs"))
+
+        # Template
+        TemplateString = self.TemplateLineEdit.text()
+        if TemplateString != "":
+            with open(self.GetResourcePath("Configs/Template.cfg"), "w") as ConfigFile:
+                ConfigFile.write(TemplateString)
+
+        # Last Opened Directory
+        if type(self.LastOpenedDirectory) == str:
+            if os.path.isdir(self.LastOpenedDirectory):
+                with open(self.GetResourcePath("Configs/LastOpenedDirectory.cfg"), "w") as ConfigFile:
+                    ConfigFile.write(self.LastOpenedDirectory)
 
     def AddToQueue(self):
         FilesToAdd = QFileDialog.getOpenFileNames(caption="Files to Add to Queue", filter="JPEG Images (*.jpeg *.jpg)", directory=self.LastOpenedDirectory)[0]
@@ -236,14 +256,7 @@ class MainWindow(QMainWindow):
         if self.RenameInProgress:
             Close = self.DisplayMessageBox("Files are currently being renamed.  Exit anyway?", Icon=QMessageBox.Question, Buttons=(QMessageBox.Yes | QMessageBox.No)) == QMessageBox.Yes
         if Close:
-            TemplateString = self.TemplateLineEdit.text()
-            if TemplateString != "":
-                with open(self.GetResourcePath("Template.cfg"), "w") as ConfigFile:
-                    ConfigFile.write(TemplateString)
-            if type(self.LastOpenedDirectory) == str:
-                if os.path.isdir(self.LastOpenedDirectory):
-                    with open(self.GetResourcePath("LastOpenedDirectory.cfg"), "w") as ConfigFile:
-                        ConfigFile.write(self.LastOpenedDirectory)
+            self.SaveConfigs()
             Event.accept()
         else:
             Event.ignore()
