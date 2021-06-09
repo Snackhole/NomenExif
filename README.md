@@ -27,9 +27,9 @@ However, for convenience, consider running `python3 CreateGNOMEDesktopFile.py` (
 If NomenExif does not run at first, you probably need to resolve some dependencies.  First, try `sudo apt install libxcb-xinerama0`.  If that doesn't resolve the issue, try installing PyQT5 with `sudo apt install python3-pyqt5`; if this does resolve the issue, you might even be able to (partially) uninstall it with `sudo apt remove python3-pyqt5` and still run NomenExif, as long as you don't autoremove the additional packages that were installed with it.  If installing PyQT5 through APT doesn't work, try installing it through pip; if you don't have pip already, use `sudo apt install python3-pip`, then run `pip3 install pyqt5`.  Other issues have not yet been encountered and will require you to do some research and troubleshooting to resolve on your system.
 
 ## Updates
-Updating NomenExif is as simple as deleting all files wherever you installed it *except* .cfg files, and then extracting the contents of the latest release to the same folder.  Any shortcuts in place should resolve without issue to the updated version.
+Updating NomenExif is as simple as deleting all files wherever you installed it *except* the `Configs` folder, and then extracting the contents of the latest release to the installation folder.  Any shortcuts in place should resolve without issue to the updated version.
 
-The .cfg files should be left in place as they store settings and contexts between uses of the app.
+The `Configs` folder should be left in place as it stores settings and contexts between uses of the app.
 
 ## Uninstallation
 Uninstalling NomenExif itself only requires deleting the directory you extracted it to, along with any shortcuts you created.
