@@ -90,7 +90,6 @@ class ExifRenamer:
                             PotentialNewPath = os.path.join(QueuedFile["Directory"], NewName + QueuedFile["Extension"])
                             self.UniqueIdentifier += 1
                         if PotentialNewPath != QueuedFile["Path"]:
-                            print("Renaming:  " + QueuedFile["FileName"] + " -> " + os.path.basename(PotentialNewPath))
                             os.rename(QueuedFile["Path"], PotentialNewPath)
                     self.FilesRenamed += 1
                 self.RenameComplete = True
