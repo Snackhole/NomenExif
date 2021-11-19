@@ -9,5 +9,6 @@ venv/
 # VS Code
 .vscode/
 
-# NomenExif Runtime Files and Compiled Versions
+# NomenExif Build and Runtime Files
 Configs/
+BUILD - */
