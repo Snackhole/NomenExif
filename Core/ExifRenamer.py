@@ -13,14 +13,13 @@ class ExifRenamer:
         Success = True
         for Addition in Additions:
             if Addition.endswith(".jpg") or Addition.endswith(".jpeg"):
-                AdditionAbsolutePath = os.path.abspath(Addition)
                 try:
-                    OpenedAddition = Image.open(AdditionAbsolutePath)
+                    OpenedAddition = Image.open(Addition)
                     AdditionExifData = {ExifTags.TAGS[NumericTag]: TagContents for NumericTag, TagContents in OpenedAddition._getexif().items() if NumericTag in ExifTags.TAGS}
                 except:
                     Success = False
                     continue
-                AdditionData = {"Path": AdditionAbsolutePath, "Directory": os.path.dirname(AdditionAbsolutePath), "FileName": os.path.basename(AdditionAbsolutePath), "Extension": os.path.splitext(AdditionAbsolutePath)[1], "ExifData": AdditionExifData}
+                AdditionData = {"Path": Addition, "Directory": os.path.dirname(Addition), "FileName": os.path.basename(Addition), "Extension": os.path.splitext(Addition)[1], "ExifData": AdditionExifData}
                 if AdditionData not in self.RenameQueue:
                     self.RenameQueue.append(AdditionData)
         self.RenameQueue.sort(key=lambda x: x["Path"])
