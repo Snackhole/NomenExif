@@ -83,15 +83,15 @@ class ExifRenamer:
                 while not self.FileQueue.empty():
                     QueuedFile = self.FileQueue.get()
                     NewName = self.GenerateFileName(QueuedFile["ExifData"], self.Template)
-                    PotentialNewPath = os.path.join(QueuedFile["Directory"], NewName + QueuedFile["Extension"])
+                    PotentialNewPath = os.path.join(QueuedFile["Directory"], f"{NewName}{QueuedFile["Extension"]}")
                     if PotentialNewPath != QueuedFile["Path"]:
                         FilesInDirectory = os.listdir(QueuedFile["Directory"])
-                        while NewName + QueuedFile["Extension"] in FilesInDirectory and PotentialNewPath != QueuedFile["Path"]:
-                            PreviousIdentifierString = " - " + str(self.UniqueIdentifier - 1)
+                        while f"{NewName}{QueuedFile["Extension"]}" in FilesInDirectory and PotentialNewPath != QueuedFile["Path"]:
+                            PreviousIdentifierString = f" - {str(self.UniqueIdentifier - 1)}"
                             if NewName.endswith(PreviousIdentifierString):
                                 NewName = NewName[:-len(PreviousIdentifierString)]
-                            NewName += " - " + str(self.UniqueIdentifier)
-                            PotentialNewPath = os.path.join(QueuedFile["Directory"], NewName + QueuedFile["Extension"])
+                            NewName += f" - {str(self.UniqueIdentifier)}"
+                            PotentialNewPath = os.path.join(QueuedFile["Directory"], f"{NewName}{QueuedFile["Extension"]}")
                             self.UniqueIdentifier += 1
                         if PotentialNewPath != QueuedFile["Path"]:
                             os.rename(QueuedFile["Path"], PotentialNewPath)

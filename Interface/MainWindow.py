@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
         self.AvailableTagsListWidget.clear()
         for AvailableTag in self.ExifRenamer.GetAvailableTags():
             AvailableTagListItem = QListWidgetItem()
-            AvailableTagListItem.setText("[" + AvailableTag + "]")
+            AvailableTagListItem.setText(f"[{AvailableTag}]")
             self.AvailableTagsListWidget.addItem(AvailableTagListItem)
 
     def SetRenameInProgress(self, RenameInProgress):
