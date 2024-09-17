@@ -5,7 +5,11 @@ from PIL import Image, ExifTags
 
 
 class ExifRenamer:
-    def __init__(self):
+    def __init__(self, MainWindow):
+        # Store Parameters
+        self.MainWindow = MainWindow
+
+        # Variables
         self.RenameQueue = []
         self.AvailableTags = set()
 
@@ -59,11 +63,12 @@ class ExifRenamer:
 
     def RenameFilesWithTemplate(self, Template):
         class RenameThread(threading.Thread):
-            def __init__(self, Template, FileQueue, AvailableTags):
+            def __init__(self, Template, FileQueue, AvailableTags, MainWindow):
                 # Store Parameters
                 self.Template = Template
                 self.FileQueue = FileQueue
                 self.AvailableTags = AvailableTags
+                self.MainWindow = MainWindow
 
                 # Variables
                 self.UniqueIdentifier = 1
@@ -109,12 +114,14 @@ class ExifRenamer:
                     FileName = FileName.replace("[MINUTE]", Minute)
                     FileName = FileName.replace("[SECOND]", Second)
                 for Tag in [AvailableTag for AvailableTag in self.AvailableTags if AvailableTag not in ["YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND"]]:
-                    FileName = FileName.replace("[" + Tag + "]", str(ExifData[Tag]))
+                    FileName = FileName.replace(f"[{Tag}]", str(ExifData[Tag]))
+                for Character in self.MainWindow.RestrictedCharacters:
+                    FileName = FileName.replace(Character, "-")
                 return FileName
 
         FileQueue = queue.Queue()
         for QueuedFile in self.RenameQueue:
             FileQueue.put(QueuedFile)
 
-        RenameThreadInst = RenameThread(Template, FileQueue, self.AvailableTags.copy())
+        RenameThreadInst = RenameThread(Template, FileQueue, self.AvailableTags.copy(), self.MainWindow)
         RenameThreadInst.start()

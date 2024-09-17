@@ -16,10 +16,11 @@ class MainWindow(QMainWindow):
         self.AbsoluteDirectoryPath = AbsoluteDirectoryPath
 
         # Variables
+        self.RestrictedCharacters = ["/", "\\", "#", "%", "&", "{", "}", "<", ">", "*", "?", "$", "!", "'", "\"", ":", "@", "+", "`", "|", "="]
         self.RenameInProgress = False
 
         # Create Exif Renamer
-        self.ExifRenamer = ExifRenamer()
+        self.ExifRenamer = ExifRenamer(self)
 
         # Initialize
         super().__init__()
@@ -173,19 +174,30 @@ class MainWindow(QMainWindow):
         self.TemplateLineEdit.insert((self.AvailableTagsListWidget.selectedItems()[0]).text())
         self.TemplateLineEdit.setFocus()
 
+    def ValidTemplate(self, Template):
+        ValidTemplate = False
+        for Tag in self.ExifRenamer.AvailableTags:
+            if f"[{Tag}]" in Template:
+                ValidTemplate = True
+        for Character in self.RestrictedCharacters:
+            if Character in Template:
+                return False
+        return ValidTemplate
+
     def Rename(self):
         # Validate Inputs
         if len(self.ExifRenamer.RenameQueue) < 1:
             self.DisplayMessageBox("No files selected to rename.", Icon=QMessageBox.Warning)
             return
+
         Template = self.TemplateLineEdit.text()
-        ValidTemplate = False
-        for Tag in self.ExifRenamer.AvailableTags:
-            if "[" + Tag + "]" in Template:
-                ValidTemplate = True
-                break
-        if not ValidTemplate:
-            self.DisplayMessageBox("Rename template must contain at least one available tag.", Icon=QMessageBox.Warning)
+
+        if not self.ValidTemplate(Template):
+            RestrictedCharactersString = ""
+            for Character in self.RestrictedCharacters:
+                RestrictedCharactersString += f"{Character} "
+            RestrictedCharactersString.rstrip()
+            self.DisplayMessageBox(f"Rename template must contain at least one available tag, and cannot contain the following characters:\n\n{RestrictedCharactersString}", Icon=QMessageBox.Warning)
             return
 
         # Start Renaming
