@@ -4,9 +4,9 @@ import os
 import threading
 from Core.ExifRenamer import ExifRenamer
 
-from PyQt5 import QtCore
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QFrame, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QProgressBar, QPushButton)
+from PyQt6 import QtCore
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import (QApplication, QFileDialog, QFrame, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QProgressBar, QPushButton)
 
 
 class MainWindow(QMainWindow):
@@ -50,28 +50,28 @@ class MainWindow(QMainWindow):
 
         # Create Widgets
         self.QueueLabel = QLabel("Rename Queue")
-        self.QueueLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.QueueLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.QueueListWidget = QListWidget()
         self.AddToQueueButton = QPushButton("Add Files to Rename Queue")
         self.AddToQueueButton.clicked.connect(self.AddToQueue)
         self.ClearQueueButton = QPushButton("Clear Rename Queue")
         self.ClearQueueButton.clicked.connect(self.ClearQueue)
         self.QueueAndTagsSeparator = QFrame()
-        self.QueueAndTagsSeparator.setFrameShape(QFrame.VLine)
-        self.QueueAndTagsSeparator.setFrameShadow(QFrame.Sunken)
+        self.QueueAndTagsSeparator.setFrameShape(QFrame.Shape.VLine)
+        self.QueueAndTagsSeparator.setFrameShadow(QFrame.Shadow.Sunken)
         self.AvailableTagsLabel = QLabel("Available Tags")
-        self.AvailableTagsLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.AvailableTagsLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.AvailableTagsListWidget = QListWidget()
         self.AvailableTagsListWidget.itemActivated.connect(self.InsertTag)
         self.TemplateSeparator = QFrame()
-        self.TemplateSeparator.setFrameShape(QFrame.HLine)
-        self.TemplateSeparator.setFrameShadow(QFrame.Sunken)
+        self.TemplateSeparator.setFrameShape(QFrame.Shape.HLine)
+        self.TemplateSeparator.setFrameShadow(QFrame.Shadow.Sunken)
         self.TemplateLabel = QLabel("Renaming Template:")
         self.TemplateLineEdit = QLineEdit()
         self.RenameButton = QPushButton("Rename Files in Queue with Template")
         self.ProgressSeparator = QFrame()
-        self.ProgressSeparator.setFrameShape(QFrame.HLine)
-        self.ProgressSeparator.setFrameShadow(QFrame.Sunken)
+        self.ProgressSeparator.setFrameShape(QFrame.Shape.HLine)
+        self.ProgressSeparator.setFrameShadow(QFrame.Shadow.Sunken)
         self.RenameButton.clicked.connect(self.Rename)
         self.RenameProgressLabel = QLabel("Rename Progress")
         self.RenameProgressBar = QProgressBar()
@@ -166,7 +166,7 @@ class MainWindow(QMainWindow):
             self.DisplayMessageBox("Some of the selected files could not be added to the queue.  They may not have Exif data.", Icon=QMessageBox.Warning)
 
     def ClearQueue(self):
-        if self.DisplayMessageBox("Clear the file queue?", Icon=QMessageBox.Question, Buttons=(QMessageBox.Yes | QMessageBox.No)) == QMessageBox.Yes:
+        if self.DisplayMessageBox("Clear the file queue?", Icon=QMessageBox.Icon.Question, Buttons=(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)) == QMessageBox.StandardButton.Yes:
             self.ExifRenamer.Clear()
             self.UpdateDisplay()
 
@@ -247,14 +247,14 @@ class MainWindow(QMainWindow):
         self.ExifRenamer.Clear()
         self.UpdateDisplay()
 
-    def DisplayMessageBox(self, Message, Icon=QMessageBox.Information, Buttons=QMessageBox.Ok, Parent=None):
+    def DisplayMessageBox(self, Message, Icon=QMessageBox.Icon.Information, Buttons=QMessageBox.StandardButton.Ok, Parent=None):
         MessageBox = QMessageBox(self if Parent is None else Parent)
         MessageBox.setWindowIcon(self.WindowIcon)
         MessageBox.setWindowTitle(self.ScriptName)
         MessageBox.setIcon(Icon)
         MessageBox.setText(Message)
         MessageBox.setStandardButtons(Buttons)
-        return MessageBox.exec_()
+        return MessageBox.exec()
 
     # Window Management Methods
     def Center(self):
@@ -266,7 +266,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, Event):
         Close = True
         if self.RenameInProgress:
-            Close = self.DisplayMessageBox("Files are currently being renamed.  Exit anyway?", Icon=QMessageBox.Question, Buttons=(QMessageBox.Yes | QMessageBox.No)) == QMessageBox.Yes
+            Close = self.DisplayMessageBox("Files are currently being renamed.  Exit anyway?", Icon=QMessageBox.Icon.Question, Buttons=(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)) == QMessageBox.StandardButton.Yes
         if Close:
             self.SaveConfigs()
             Event.accept()
