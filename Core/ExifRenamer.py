@@ -16,7 +16,8 @@ class ExifRenamer:
     def AddToRenameQueue(self, Additions):
         Success = True
         for Addition in Additions:
-            if Addition.endswith(".jpg") or Addition.endswith(".jpeg"):
+            AdditionLowercase = Addition.lower()
+            if AdditionLowercase.endswith(".jpg") or AdditionLowercase.endswith(".jpeg"):
                 try:
                     OpenedAddition = Image.open(Addition)
                     AdditionExifData = {ExifTags.TAGS[NumericTag]: TagContents for NumericTag, TagContents in OpenedAddition._getexif().items() if NumericTag in ExifTags.TAGS}
