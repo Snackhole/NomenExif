@@ -3,12 +3,15 @@ import json
 import math
 import os
 import threading
+import urllib.request
 
 from PyQt6 import QtCore
 from PyQt6.QtGui import QIcon, QPalette, QColor, QAction
 from PyQt6.QtWidgets import QApplication, QFileDialog, QFrame, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QProgressBar, QPushButton, QInputDialog
 
+from Build import BuildVariables
 from Core.ExifRenamer import ExifRenamer
+from Interface.Dialogs.UpdateDialog import UpdateDialog
 from Interface.StatusThread import StatusThread
 
 
@@ -22,6 +25,7 @@ class MainWindow(QMainWindow):
         # Variables
         self.RestrictedCharacters = ["/", "\\", "#", "%", "&", "{", "}", "<", ">", "*", "?", "$", "!", "'", "\"", ":", "@", "+", "`", "|", "="]
         self.RenameInProgress = False
+        self.CheckForUpdatesOnStart = True
 
         # Create Exif Renamer
         self.ExifRenamer = ExifRenamer(self)
@@ -38,6 +42,10 @@ class MainWindow(QMainWindow):
 
         # Load Configs
         self.LoadConfigs()
+
+        # Check for Updates
+        if self.CheckForUpdatesOnStart:
+            self.UpdateCheck()
 
     def CreateInterface(self):
         # Load Theme
@@ -134,11 +142,21 @@ class MainWindow(QMainWindow):
         self.CreateKeybindings()
 
     def CreateActions(self):
+        # File Actions
         self.SetThemeAction = QAction("Set Theme")
         self.SetThemeAction.triggered.connect(self.SetTheme)
 
         self.QuitAction = QAction("Quit")
         self.QuitAction.triggered.connect(self.close)
+
+        # About Actions
+        self.CheckForUpdatesAction = QAction("Check for Updates")
+        self.CheckForUpdatesAction.triggered.connect(lambda: self.UpdateCheck(ManualCheck=True))
+
+        self.CheckForUpdatesOnStartAction = QAction("Check for Updates on Start")
+        self.CheckForUpdatesOnStartAction.setCheckable(True)
+        self.CheckForUpdatesOnStartAction.setChecked(True)
+        self.CheckForUpdatesOnStartAction.triggered.connect(self.ToggleCheckForUpdatesOnStart)
 
     def CreateMenuBar(self):
         self.MenuBar = self.menuBar()
@@ -147,6 +165,10 @@ class MainWindow(QMainWindow):
         self.FileMenu.addAction(self.SetThemeAction)
         self.FileMenu.addSeparator()
         self.FileMenu.addAction(self.QuitAction)
+
+        self.AboutMenu = self.MenuBar.addMenu("&About")
+        self.AboutMenu.addAction(self.CheckForUpdatesAction)
+        self.AboutMenu.addAction(self.CheckForUpdatesOnStartAction)
 
     def CreateKeybindings(self):
         self.DefaultKeybindings = {}
@@ -191,6 +213,15 @@ class MainWindow(QMainWindow):
         for Action, Keybinding in self.Keybindings.items():
             getattr(self, Action).setShortcut(Keybinding)
 
+        # Check for Updates on Start
+        CheckForUpdatesOnStartFile = self.GetResourcePath("Configs/CheckForUpdatesOnStart.cfg")
+        if os.path.isfile(CheckForUpdatesOnStartFile):
+            with open(CheckForUpdatesOnStartFile, "r") as ConfigFile:
+                self.CheckForUpdatesOnStart = json.loads(ConfigFile.read())
+        else:
+            self.CheckForUpdatesOnStart = True
+        self.CheckForUpdatesOnStartAction.setChecked(self.CheckForUpdatesOnStart)
+
     def SaveConfigs(self):
         if not os.path.isdir(self.GetResourcePath("Configs")):
             os.mkdir(self.GetResourcePath("Configs"))
@@ -214,6 +245,10 @@ class MainWindow(QMainWindow):
         # Theme
         with open(self.GetResourcePath("Configs/Theme.cfg"), "w") as ConfigFile:
             ConfigFile.write(json.dumps(self.Theme))
+
+        # Check for Updates on Start
+        with open(self.GetResourcePath("Configs/CheckForUpdatesOnStart.cfg"), "w") as ConfigFile:
+            ConfigFile.write(json.dumps(self.CheckForUpdatesOnStart))
 
     def AddToQueue(self):
         FilesToAdd = QFileDialog.getOpenFileNames(caption="Files to Add to Queue", filter="JPEG Images (*.jpeg *.jpg)", directory=self.LastOpenedDirectory)[0]
@@ -482,3 +517,20 @@ class MainWindow(QMainWindow):
             Event.accept()
         else:
             Event.ignore()
+
+    # Update Checking Methods
+    def UpdateCheck(self, ManualCheck=False):
+        try:
+            Contents = urllib.request.urlopen(f"https://api.github.com/repos/Snackhole/{BuildVariables["AppName"]}/releases").read()
+            Contents = Contents.decode("utf-8")
+            Contents = json.loads(Contents)
+            LatestVersion = Contents[0]["tag_name"]
+            if LatestVersion != BuildVariables["Version"]:
+                UpdateDialogInst = UpdateDialog(LatestVersion, self)
+            elif ManualCheck and LatestVersion == BuildVariables["Version"]:
+                self.DisplayMessageBox("You are using the latest version.")
+        except Exception as Error:
+            self.DisplayMessageBox(f"Checking for updates caused the following error:\n\n{str(Error)}.")
+
+    def ToggleCheckForUpdatesOnStart(self):
+        self.CheckForUpdatesOnStart = not self.CheckForUpdatesOnStart
