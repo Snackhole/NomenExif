@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
     def CreateMenuBar(self):
         self.MenuBar = self.menuBar()
 
-        self.FileMenu = self.MenuBar.addMenu("File")
+        self.FileMenu = self.MenuBar.addMenu("&File")
         self.FileMenu.addAction(self.SetThemeAction)
         self.FileMenu.addSeparator()
         self.FileMenu.addAction(self.QuitAction)
